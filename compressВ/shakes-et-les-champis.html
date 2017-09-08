@@ -1,0 +1,154 @@
+<html>
+	<head>
+		<script language="javascript" type="text/javascript" src="jquery.js"></script>
+		<script type="text/javascript">
+			
+			var score=0;
+			var joueur = {width:80,height:120,x:500,y:680};
+			var bidules=[];
+
+			window.onload=function()
+			{
+				var c = document.getElementById( "canvas" );
+				var ctx = c.getContext("2d");
+				
+				var loop=function() 
+				{
+					var img = new Image();
+					img.src = 'Taverne.jpg';
+					ctx.drawImage(img,0,0,1200,800);
+					generereBidule();
+					deplacerBidule();
+					detecterCollision();
+					dessinerJoueur();
+					dessinerBidule();
+					
+				}
+		
+				var generereBidule=function() {			
+					if(bidules.length<20 && Math.random()<0.02)
+					{
+						bidules.push({src:"pilz.png",y:-10,x:10+parseInt(Math.random()*1190)});
+					}			
+				}
+		
+				var deplacerBidule=function() {
+					var newBidules=[];	
+					for(var i=0 ; i<bidules.length ; i++ )
+					{
+						bidules[i].y+=3;
+						
+						if(bidules[i].y>785)
+						{
+							if(bidules[i].src=='pilz.png')
+							{
+								score-=1;
+								changerScore();
+								//dessinerScore();
+							}
+						}
+						else
+						{
+							newBidules.push(bidules[i]);
+						}
+					}
+					bidules=newBidules;
+				};
+				var detecterCollision=function()
+				{			
+					for(var i=0 ; i<bidules.length ; i++ )
+					{
+						var bound1={x1:joueur.x,x2:joueur.x+joueur.width,y1:joueur.y+joueur.height-30,y2:joueur.y+joueur.height};
+						var bound2={x1:bidules[i].x,x2:bidules[i].x+12,y1:bidules[i].y,y2:bidules[i].y+12};
+						
+						if((enCollision(bound1,bound2)) && (bidules[i].src!='images.jpg') )
+						{
+							score+=1;
+							changerScore();
+							bidules[i].src='images.jpg';
+						}
+					}
+				};
+				
+				var enCollision = function(bound1,bound2) 
+				{
+					var res = false;
+					if (bound2.y2>bound1.y1)
+					{
+						if ((bound1.x1 < bound2.x1) && (bound2.x2 < bound1.x2))
+						{
+							res = true;
+						}
+					}
+					return res;
+				};
+				
+				var dessinerBidule=function() {			
+					for(var i=0 ; i<bidules.length ; i++ )
+					{
+						var img = new Image();
+						img.swidth="30px";
+						img.sheight="30px";
+						img.src = bidules[i].src;
+						ctx.drawImage(img, bidules[i].x, bidules[i].y, 12, 12);
+					}
+				};
+				
+				var dessinerJoueur = function()
+				{
+					var img = new Image();
+					img.src = 'personnage.png';
+					ctx.drawImage(img, joueur.x, joueur.y, joueur.width, joueur.height);
+				};
+				
+				setInterval(loop,40);
+			};
+			
+			var key = function (e) 
+			{
+				e = e || window.event;
+				var k = e.keyCode || e.which;
+				//	 alert(k);
+				if (k == 37)
+				{
+					if (joueur.x  > 30) joueur.x = joueur.x-30;
+				}
+				else if (k == 39)
+				{
+					if (joueur.x  < (1200-30-joueur.width)) joueur.x = joueur.x+30;
+				}
+			};
+			
+			function changerScore()
+			{
+				document.getElementById("score").innerHTML = "Ton score : "+score;
+			}
+			
+			document.onkeydown = key;
+		</script>
+		<style type="text/css">
+			body
+			{
+				background-image:url(Fond.bmp);
+				text-align:center;
+			}
+			
+			h1
+			{
+				background:black;
+				color:white;
+			}
+			
+			h3
+			{
+				background:black;
+				color:white;
+			}
+		</style>
+	</head>
+	<body>
+		<h1> Attrape  les champignons ! </h1>
+		<h3 id="score"> Ton score : 0 point </h3>
+		<canvas id="canvas" width="1200px" height="800px"></canvas>
+	</body>
+</html>

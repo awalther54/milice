@@ -1,0 +1,24 @@
+<config>
+	<param name="mp3" value="http://lamilicedemirodin.hebergratuit.net/musics/COLOMBO_Gods.mp3|http://lamilicedemirodin.hebergratuit.net/musics/The_xx_-_Intro.mp3|http://lamilicedemirodin.hebergratuit.net/musics/Something_to_Prove_Spermbirds.mp3|http://lamilicedemirodin.hebergratuit.net/musics/Joey_Starr_wars_DJ_Zebra.mp3|http://lamilicedemirodin.hebergratuit.net/musics/MIKA_Happy_Ending.mp3|http://lamilicedemirodin.hebergratuit.net/musics/Linkin_Park_Final_Masquerade.mp3"/>
+	<param name="title" value="deedee29 - COLOMBO - Gods|La Belette - The xx - Intro|Linaya - Something to Prove - Spermbirds|Maaanu - Joey Starr Wars - DJ Zebra|Mirodin - Happy Ending - Mika|The Diplomate - Final Masquerate - Linkin Park"/>
+	<param name="height" value="200"/>
+	<param name="width" value="250"/>
+	<param name="loadingcolor" value="C3D9FF"/>
+	<param name="bgcolor1" value="003366"/>
+	<param name="bgcolor2" value="215670"/>
+	<param name="buttoncolor" value="2D6E89"/>
+	<param name="buttonovercolor" value="6C82B5"/>
+	<param name="slidercolor1" value="2D6E89"/>
+	<param name="slidercolor2" value="66B599"/>
+	<param name="sliderovercolor" value="006699"/>
+	<param name="textcolor" value="6C82B5"/>
+	<param name="playlistcolor" value="006699F"/>
+	<param name="currentmp3color" value="66B5FF"/>
+	<param name="scrollbarcolor" value="006699F"/>
+	<param name="scrollbarovercolor" value="2D6E89"/>
+	<param name="playlistalpha" value="25"/>
+	<param name="showvolume" value="1"/>
+	<param name="showinfo" value="1"/>
+	<param name="showplaylistnumbers" value="0"/>
+	<param name="volume" value="50"/>
+</config>

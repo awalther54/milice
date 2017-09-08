@@ -1,0 +1,529 @@
+<html>
+	<head>
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+	<meta http-equiv="Expires" content="0" />
+		<script type="text/javascript">
+
+			document.addEventListener("DOMContentLoaded", function(event)
+			{
+				document.getElementById("loading").style.display="none";
+			}
+			);
+
+			var cliqueUneSeuleFois=true;
+			var score=0;
+			var joueur = {width:80,height:120,x:500,y:480};
+			var bidules=[];
+			var mechants=[];
+			var secondes = 0;
+			var minutes = 0;
+			var combot = 0;
+			var aveugle = 0;
+            var timer;
+            var jeu;
+            var pause = false;
+            var text = "";
+            var fonds = ["IMG/Taverne.jpg", "IMG/Poste.jpg", "IMG/Arene.jpg", "IMG/Guilde.jpg"];
+			for (var i = 1; i<=21;i++)
+			{
+				fonds[i+3]="IMG/Aventure"+i+".jpg";
+			}
+			var indexFonds=0;
+            function IndiquerMinutes(min)
+            {
+                secondes = min * 60;
+            }
+			
+            function Chrono()
+            {
+				secondes +=1;
+				minutes = Math.floor(secondes/60);
+				secondes -= minutes * 60;
+				if (minutes > 0)
+				{
+					text = minutes + ' min ' + secondes + ' sec';
+				}
+				else
+				{  
+					text = secondes + ' sec';
+				}
+                document.getElementById('chrono').innerHTML = text;
+				secondes += minutes * 60
+            }
+			
+            function DemarrerChrono()
+            {
+                timer = setInterval('Chrono()', 1000);
+                 
+            }
+			
+            function ArreterChrono()
+            {
+                clearInterval(timer);
+            }
+			
+            function PauseChrono()
+            {
+                if (!pause)
+                {
+                    pause = true;
+                    clearInterval(timer);
+                    document.getElementById('chrono').innerHTML = text;
+                }
+                else
+                {
+                    pause = false;
+                    DemarrerChrono();
+                }
+            }
+
+			var demarrerLeJeu=function()
+			{
+				var c = document.getElementById( "canvas" );
+				var ctx = c.getContext("2d");
+				
+				var loop=function() 
+				{
+					generereBidule();
+					deplacerBidule();
+					detecterCollision();
+					testVictoire();
+					if((aveugle%2)!=0)
+					{
+						aveugle--; 
+						ctx.fillStyle = "rgb(0,0,0)";
+						ctx.fillRect (0,0,1200,600);
+					}
+					else
+					{
+						var img = new Image();
+						img.src = fonds[indexFonds];
+						ctx.drawImage(img,0,0,1200,600);
+						if(combot>=10)
+						{
+							img = new Image();
+							img.src = "IMG/combot_ok.png";
+							ctx.drawImage(img,0,0,1200,600);
+						}
+						dessinerJoueur();
+						dessinerBidule();
+						if (aveugle != 0) aveugle--; 
+					}
+				}
+				
+				var testVictoire=function()
+				{
+					if (score>=100)
+					{
+						clearInterval(timer);
+						clearInterval(jeu);
+						document.getElementById("annonce").innerHTML="Vous avez gagne en "+minutes+" minutes et "+secondes%60+" secondes.";
+						document.getElementById("annonce").style.display="block";
+					}
+				}
+				
+				var generereBidule=function()
+				{
+					if(bidules.length<20 && Math.random()<0.1)
+					{
+						bidules.push({src:"IMG/pilz.png",y:-10,x:10+parseInt(Math.random()*1190)});
+					}
+					if(bidules.length<20 && Math.random()<0.002)
+					{
+						bidules.push({src:"IMG/pilz_or.png",y:-10,x:10+parseInt(Math.random()*1190)});
+					}
+					if(mechants.length<50 && Math.random()<0.3)
+					{
+						mechants.push({src:"IMG/pilz_bleu.png",y:-10,x:10+parseInt(Math.random()*1190)});
+						if(combot>=10)
+						mechants.push({src:"IMG/pilz_bleu.png",y:-10,x:10+parseInt(Math.random()*1190)});
+					}	
+					if(mechants.length<50 && Math.random()<0.05)
+					{
+						mechants.push({src:"IMG/pilz_vert.png",y:-10,x:10+parseInt(Math.random()*1190)});
+					}	
+					if(mechants.length<50 && Math.random()<0.05)
+					{
+						mechants.push({src:"IMG/pilz_rose.png",y:-10,x:10+parseInt(Math.random()*1190)});
+					}	
+				}
+		
+				var deplacerBidule=function() {
+					var newBidules=[];	
+					for(var i=0 ; i<bidules.length ; i++ )
+					{
+						bidules[i].y+=5;
+						
+						if(!(bidules[i].y>585))
+						{
+							newBidules.push(bidules[i]);
+						}
+					}
+					bidules=newBidules;
+					var newMechants=[];	
+					for(var i=0 ; i<mechants.length ; i++ )
+					{
+						if(combot>=10) mechants[i].y+=2;
+						mechants[i].y+=5;
+						
+						if(!(mechants[i].y>585))
+						{
+							newMechants.push(mechants[i]);
+						}
+					}
+					mechants=newMechants;
+				};
+				
+				var detecterCollision=function()
+				{
+					for(var i=0 ; i<mechants.length ; i++ )
+					{
+						var bound1={x1:joueur.x,x2:joueur.x+joueur.width,y1:joueur.y+joueur.height-30,y2:joueur.y+joueur.height};
+						var bound2={x1:mechants[i].x,x2:mechants[i].x+12,y1:mechants[i].y,y2:mechants[i].y+12};
+						
+						if((enCollision(bound1,bound2)) && (mechants[i].src=='IMG/pilz_bleu.png') )
+						{
+							score-=2;
+							changerScore();
+							mechants[i].src='IMG/-2.jpg';
+							combot=0;
+							MAJcombot();
+						}
+						
+						if((enCollision(bound1,bound2)) && (mechants[i].src=='IMG/pilz_vert.png') )
+						{
+							aveugle=50;
+							MAJcombot();
+							mechants[i].src='';
+						}
+						
+						if((enCollision(bound1,bound2)) && (mechants[i].src=='IMG/pilz_rose.png') )
+						{
+							indexFonds = (indexFonds+1)%fonds.length;
+							mechants[i].src='';
+						}
+					}
+					for(var i=0 ; i<bidules.length ; i++ )
+					{
+						var bound1={x1:joueur.x,x2:joueur.x+joueur.width,y1:joueur.y+joueur.height-30,y2:joueur.y+joueur.height};
+						var bound2={x1:bidules[i].x,x2:bidules[i].x+12,y1:bidules[i].y,y2:bidules[i].y+12};
+						
+						if(enCollision(bound1,bound2))
+						{
+							if (bidules[i].src=='IMG/pilz.png')
+							{
+								if(combot>=10) 
+								{
+									score+=2;
+									changerScore();
+									bidules[i].src='IMG/+2.jpg';
+									combot++;
+									MAJcombot();
+								}
+								else
+								{
+									score+=1;
+									changerScore();
+									bidules[i].src='IMG/+1.jpg';
+									combot++;
+									MAJcombot();
+								}
+							}
+							else if (bidules[i].src=='IMG/pilz_or.png')
+							{
+								if(combot>=10) 
+								{
+									score+=10;
+									changerScore();
+									bidules[i].src='IMG/+10.jpg';
+									combot++;
+									MAJcombot();
+								}
+								else
+								{
+									score+=5;
+									changerScore();
+									bidules[i].src='IMG/+5.jpg';
+									combot++;
+									MAJcombot();
+								}
+							}
+						}
+					}
+				};
+				
+				var enCollision = function(bound1,bound2) 
+				{
+					var res = false;
+					if (bound2.y2>bound1.y1)
+					{
+						if ((bound1.x1 < bound2.x1) && (bound2.x2 < bound1.x2))
+						{
+							res = true;
+						}
+					}
+					return res;
+				};
+				
+				var dessinerBidule=function() 
+				{			
+					for(var i=0 ; i<bidules.length ; i++ )
+					{
+						var img = new Image();
+						img.src = bidules[i].src;
+						ctx.drawImage(img, bidules[i].x, bidules[i].y, 12, 12);
+					}
+					for(var i=0 ; i<mechants.length ; i++ )
+					{
+						var img = new Image();
+						img.src = mechants[i].src;
+						ctx.drawImage(img, mechants[i].x, mechants[i].y, 12, 12);
+					}
+				};
+				
+				var dessinerJoueur = function()
+				{
+					var img = new Image();
+					img.src = 'IMG/personnage.png';
+					ctx.drawImage(img, joueur.x, joueur.y, joueur.width, joueur.height);
+				};
+				
+				var MAJcombot = function()
+				{
+					document.getElementById("combot").innerHTML="Combot : "+combot;
+				};
+				jeu=setInterval(loop,40);
+			};
+			
+			var start = function ()
+			{
+				cliqueUneSeuleFois=false;
+				document.getElementById("start").style.display="none";
+				DemarrerChrono();
+				demarrerLeJeu();
+			};
+			
+			var pause = function ()
+			{
+				clearInterval(timer);
+				clearInterval(jeu);
+				document.getElementById("start").innerHTML="Revenir au jeu";
+				document.getElementById("start").style.display="block";
+			};
+			
+			var key = function (e) 
+			{
+				e = e || window.event;
+				var k = e.keyCode || e.which;
+				//alert(k);
+				if (k == 37)
+				{
+					if (joueur.x  > 0) joueur.x = joueur.x-30;
+				}
+				else if (k == 39)
+				{
+					if (joueur.x  < (1200-10-joueur.width)) joueur.x = joueur.x+30;
+				}
+				else if (k == 80)
+				{
+					pause();
+				}
+			};
+			
+			function changerScore()
+			{
+				document.getElementById("score").innerHTML = "Ton score : "+score;
+			}
+			
+			window.onkeydown = key;
+			
+			function rules()
+			{
+				window.open('regles.html','Regles du Jeu','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=1, copyhistory=0, menuBar=0, width=1200, height=850, left=20, top=20');
+			}
+		</script>
+		<style type="text/css">
+			body
+			{
+				background:url(IMG/Fond_Gauche.jpg) no-repeat left, 
+				url(IMG/Fond_Droite.jpg) no-repeat right, 
+				url(IMG/Fond_Centre.jpg) repeat center; 
+				color:white;
+			}
+			
+			td
+			{
+				background:black;
+				text-align:center;
+			}
+			
+			h1
+			{
+				background:black;
+				color:white;
+			}
+			
+			h3
+			{
+				background:black;
+				color:white;
+			}
+			
+			a
+			{
+				background:black;
+				color:white;
+				cursor:pointer;
+				font-size:30px;
+			}
+			
+			p
+			{
+				background:black;
+				color:white;
+				font-size:30px;
+			}
+			
+			#annonce
+			{
+				position: absolute;
+				font-size: 72px;
+				top: 15%;
+				left: 40%;
+				background: url(IMG/gagne.png) bottom no-repeat white;
+				height: 700px;
+				width: 400px;
+				display: none;
+			}
+			
+			#start
+			{
+				position: absolute;
+				font-size: 72px;
+				top: 35%;
+				left: 40%;
+				display: block;
+				background:black;
+				color:white;
+			}
+			
+			body
+			{
+				background:url(IMG/Fond_Gauche.jpg) no-repeat left, 
+				url(IMG/Fond_Droite.jpg) no-repeat right, 
+				url(IMG/Fond_Centre.jpg) repeat center; 
+				color:white;
+			}
+
+			#header
+			{
+				margin-top:5;
+				margin-left:0;
+				margin-right:0;
+				background:black;
+				color:white;
+				text-align:right;
+				position:relative;
+			}
+
+			a
+			{
+				color:white;
+			}
+
+			#container
+			{
+				top:45;
+				left:5;
+				right:5;
+				bottom:5;
+				position:absolute;
+				text-align: center;
+			}
+
+			table
+			{
+				border:white 1px solid;
+				background:rgba(0,0,0,0.5);
+				width:100%;
+				height:100%;
+			}
+
+			table table
+			{
+				height:50px;
+			}
+
+			td
+			{
+				text-align:center;
+			}
+		</style>
+	</head>
+	<body>
+<div id="header">
+<form action="shakes-et-les-champis.php" method="post">
+<?php
+if (!isset($_SESSION['login'])) {
+?>
+Identifiant : <input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>">
+Mot de passe : <input type="password" name="pass" value="<?php if (isset($_POST['pass'])) echo htmlentities(trim($_POST['pass'])); ?>">
+<input type="submit" name="connexion" value="Connexion">
+<a href="inscription.php">Vous inscrire</a>
+<?php
+if (isset($erreur)) echo '<br /><br />',$erreur;
+?>
+</form>
+<? } else { ?>
+Bienvenue <?php echo htmlentities(trim($_SESSION['login'])); ?>&nbsp;&nbsp;
+<a href="deconnexion.php">Deconnexion</a>
+<?php }
+if (isset($erreur)) echo '<br /><br />',$erreur;
+?>
+</div>
+		<div id="loading" style="vertical-align:middle;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);position:absolute;z-index:2;">
+			<img src="http://gickr.com/results3/anim_c87cb4f5-2e71-2634-45d9-22427b9cc466.gif" style="width:300;margin:auto;"/>
+		</div>
+		
+		<script type="text/javascript">
+		var oImg;
+		for (i=0;i<fonds.length;i++)
+		{
+			var oImg=document.createElement("img");
+			oImg.setAttribute('src', fonds[i]);
+			oImg.setAttribute('alt', 'na');
+			oImg.setAttribute('height', '1px');
+			oImg.setAttribute('width', '1px');
+			oImg.setAttribute('display', 'none');
+			document.body.appendChild(oImg);
+		}
+		</script>
+<div id="container">
+		<h3 style="width:100%;height:30px;text-align:center;"> Attrape  les champignons ! (Fleches directionnelles pour bouger !) </h1>
+		<table style="width:100%;height:30px;">
+			<TR>
+				<TD style="width:20%;">
+				<a href="index.php">Retour vers le menu</a>
+				</TD>
+				<TD style="width:20%;">
+				<p id="score"> Ton score : 0 point </p>
+				</TD>
+				<TD style="width:20%;">
+				<p id="chrono">Temps : 0 sec</p>
+				</TD>
+				<TD style="width:20%;">
+				<p id="combot">Combot : 0</p>
+				</TD>
+				<TD style="width:20%;">
+				<a onclick="rules()">Regles</a>
+				</TD>
+			</TR>
+		</table>
+		<br/>
+		<canvas id="canvas" width="1200px" height="600px" style="left:auto;right:auto;"></canvas>
+		<div id="annonce">Gagné !</div>
+		<div id="start" onclick="start()">Commencer !</a></div>
+</div>
+	</body>
+</html>

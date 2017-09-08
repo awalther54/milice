@@ -1,0 +1,269 @@
+<html>
+	<head>
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+	<meta http-equiv="Expires" content="0" />
+	<script type="text/javascript">
+	document.addEventListener("DOMContentLoaded", function(event)
+	{
+		document.getElementById("loading").style.display="none";
+	}
+	);
+	var pasEncoreCommence=true;
+	var imgs = [];
+	var coup1="";
+	var coup2="";
+	var coups=0;
+	var nbtrouve=0;
+	for(var i=0;i<2;i++)
+	{
+		imgs.push("IMG/0k1zu.png");
+		imgs.push("IMG/Arkona.png");
+		imgs.push("IMG/ARMINA.png");
+		imgs.push("IMG/Arthur26.png");
+		imgs.push("IMG/Cattie Brie.png");
+		imgs.push("IMG/Celynia.png");
+		imgs.push("IMG/clarius.png");
+		imgs.push("IMG/cleopatra.png");
+		imgs.push("IMG/D0minatus.png");
+		imgs.push("IMG/Dark Deglingo.png");
+		imgs.push("IMG/DeathShadow.png");
+		imgs.push("IMG/Deloth.png");
+		imgs.push("IMG/Eliwin.png");
+		imgs.push("IMG/Gat.png");
+		imgs.push("IMG/Gwarzzy.png");
+		imgs.push("IMG/Kalith.png");
+		imgs.push("IMG/kiara86568.png");
+		imgs.push("IMG/LeTatou.png");
+		imgs.push("IMG/Lokhedill.png");
+		imgs.push("IMG/Manite.png");
+		imgs.push("IMG/Mirodin.png");
+		imgs.push("IMG/muffler.png");
+		imgs.push("IMG/Myuria.png");
+		imgs.push("IMG/nufnuf.png");
+		imgs.push("IMG/Sanglion.png");
+		imgs.push("IMG/Saqqara.png");
+		imgs.push("IMG/scratch.png");
+		imgs.push("IMG/skeul.png");
+		imgs.push("IMG/Symedelic.png");
+		imgs.push("IMG/Truhania.png");
+		imgs.push("IMG/vaderetro.png");
+		imgs.push("IMG/Yaroba.png");
+	}
+	function randomInt(mini, maxi)
+	{
+		 var nb = mini + (maxi+1-mini)*Math.random();
+		 return Math.floor(nb);
+	}
+	 
+	Array.prototype.shuffle = function(n)
+	{
+		 if(!n)
+			  n = this.length;
+		 if(n > 1)
+		 {
+			  var i = randomInt(0, n-1);
+			  var tmp = this[i];
+			  this[i] = this[n-1];
+			  this[n-1] = tmp;
+			  this.shuffle(n-1);
+		 }
+	var coups=0;
+	}
+	
+	function changerCoup()
+	{
+		document.getElementById("coups").innerHTML="Coups : "+coups;
+	}
+	
+	function cachermontrer(toto)
+	{
+		var a = toto.src;
+		toto.src=toto.value;
+		toto.value=a;
+	}
+	
+	function retourner(toto)
+	{
+		if((coup1!="")&&(coup2!=""))
+		{
+			if(coup1.src==coup2.src)
+			{
+				nbtrouve++;
+				coup1.style.display="none";
+				coup2.style.display="none";
+			}
+			cachermontrer(coup1);
+			cachermontrer(coup2);
+			coup1="";
+			coup2="";
+			coups++;
+			changerCoup();
+			testVictoire();
+		}
+		else if (coup1=="")
+		{
+			coup1=toto;
+			cachermontrer(toto);
+		}
+		else
+		{
+			if(coup1==toto){}
+			else
+			{
+				coup2=toto;
+				cachermontrer(toto);
+			}
+		}
+	}
+	
+	var testVictoire=function()
+	{
+		if (nbtrouve>=32)
+		{
+			document.getElementById("annonce").innerHTML="Vous avez gagne en "+coups+" coups.";
+			document.getElementById("annonce").style.display="block";
+		}
+	}
+	
+	function rules()
+	{
+		window.open('regles_memory.html','Regles du Jeu','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=1, copyhistory=0, menuBar=0, width=1200, height=850, left=20, top=20');
+	}
+	
+	function start()
+	{
+		if(pasEncoreCommence)
+		{
+			document.getElementById("start").style.display="none";
+			pasEncoreCommence=false;
+			imgs.shuffle();
+			for (var i=0;i<imgs.length;i++)
+			{
+				var left=(i%10)*10;
+				var top=Math.floor(i/10)*18;
+				var img = document.createElement("img");
+				img.setAttribute("style","height:17%;width:9%;position:absolute;padding:2;left:"+(1+left)+"%;top:"+(1+top)+"%;");
+				img.setAttribute("onclick","retourner(this)");
+				img.id = "carte"+i;
+				img.src = "IMG/carte.png";
+				img.value = imgs[i];
+				document.getElementById("tableauDeJeu").appendChild(img);
+			}
+		}
+	}
+	</script>
+	<style type="text/css">
+		body
+		{
+			background: url("IMG/Fond_Gauche.jpg") no-repeat scroll left center, url("IMG/Fond_Droite.jpg") no-repeat scroll right center, url("IMG/Fond_Centre.jpg") repeat scroll center center rgba(0, 0, 0, 0);
+			background-color:white;
+			text-align:center;
+		}
+		
+		td
+		{
+			background:black;
+			text-align:center;
+		}
+		
+		h1
+		{
+			background:black;
+			color:white;
+		}
+		
+		h3
+		{
+			background:black;
+			color:white;
+		}
+		
+		a
+		{
+			background:black;
+			color:white;
+			cursor:pointer;
+			font-size:30px;
+		}
+		
+		p
+		{
+			background:black;
+			color:white;
+			font-size:30px;
+		}
+		
+		#tableauDeJeu
+		{
+			position: absolute;
+			top: 120px;
+			left: 10px;
+			right: 10px;
+			bottom: 10px;
+			background:IMG/Taverne.jpg;
+		}
+		
+		#annonce
+		{
+			position: absolute;
+			font-size: 72px;
+			top: 15%;
+			left: 40%;
+			background: url(IMG/gagne.png) bottom no-repeat white;
+			height: 700px;
+			width: 400px;
+			display: none;
+		}
+		
+		#start
+		{
+			position: absolute;
+			font-size: 72px;
+			top: 35%;
+			left: 40%;
+			display: block;
+			background:black;
+			color:white;
+		}
+	</style>
+	</head>
+	<body>
+	
+		<div id="loading" style="vertical-align:middle;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);position:absolute;z-index:2;">
+			<img src="http://gickr.com/results3/anim_c87cb4f5-2e71-2634-45d9-22427b9cc466.gif" style="width:300;margin:auto;"/>
+		</div>
+		
+		<script type="text/javascript">
+		var oImg;
+		for (i=0;i<imgs.length;i++)
+		{
+			var oImg=document.createElement("img");
+			oImg.setAttribute('src', imgs[i]);
+			oImg.setAttribute('alt', 'na');
+			oImg.setAttribute('height', '1px');
+			oImg.setAttribute('width', '1px');
+			oImg.setAttribute('display', 'none');
+			document.body.appendChild(oImg);
+		}
+		</script>
+		
+		<h1> Trouve les paires ! </h1>
+		<table style="width:100%;">
+			<TR>
+				<TD style="width:33%;">
+				<a href="index.php">Retour vers le menu</a>
+				</TD>
+				<TD style="width:34%;">
+				<p id="coups">Coups : 0</p>
+				</TD>
+				<TD style="width:33%;">
+				<a onclick="rules()">Regles</a>
+				</TD>
+			</TR>
+		</table>
+		<div id="tableauDeJeu"></div>
+		<div id="annonce">Gagné !</div>
+		<div id="start" onclick="start()">Commencer !</a></div>
+	</body>
+</html>

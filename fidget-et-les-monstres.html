@@ -1,0 +1,446 @@
+<html>
+	<head>
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+	<meta http-equiv="Expires" content="0" />
+		<script type="text/javascript">
+			if(window.navigator.appName == 'Microsoft Internet Explorer') document.getElementById("blockIE").style.display="block";
+			var cliqueUneSeuleFois=true;
+			var score=0;
+			var joueur = {width:80,height:120,x:0,y:480,src:"IMG/shakes_mago.png"};
+			var missiles=[];
+			var mechants=[];
+			var gentils=[];
+			var aveugle = 0;
+            var timer;
+            var jeu;
+            var pause = false;
+            var text = "";
+            var fonds = "";
+			var indexFonds=0;
+			var couleurCourante = "rouge";
+			var couleurs = ["rouge","bleu","jaune","vert"];
+			var vie = 1000;
+			var niveau = 1;
+            
+			var demarrerLeJeu=function()
+			{
+				var c = document.getElementById( "canvas" );
+				var ctx = c.getContext("2d");
+				
+				var loop=function() 
+				{
+					var img = new Image();
+					img.src = "IMG/Aventure14.jpg";
+					ctx.drawImage(img,0,0,1200,600);
+					generereBidule();
+					deplacerBidule();
+					detecterCollision();
+					dessinerBidule();
+					dessinerJoueur();
+				}
+				
+				var defaite=function()
+				{
+					clearInterval(jeu);
+					document.getElementById("annonce").innerHTML="Vous avez perdu... Mais vous avez abattu "+score+" monstres !";
+					document.getElementById("annonce").style.display="block";
+				}
+				
+				var generereBidule=function()
+				{
+					var color = couleurs[Math.floor(Math.random()*4)];
+					var zigzag = (Math.random()*2>Math.random()*2);
+					if (mechants.length<Math.floor(Math.sqrt(niveau))) mechants.push({src:"IMG/gremlin_"+color+".png",x:1150,y:parseInt(Math.random()*550),couleur:color,zigzag:zigzag,xzigzag:0});
+					if(mechants.length<50 && Math.random()<0.01)
+					{
+						color = couleurs[Math.floor(Math.random()*4)]
+						mechants.push({src:"IMG/gremlin_"+color+".png",x:1150,y:parseInt(Math.random()*550),couleur:color,zigzag:zigzag,xzigzag:0});
+					}
+					if ((gentils.length<1)&&(niveau>4))
+					if(Math.random()<0.002)
+					{
+						gentils.push({src:"IMG/chamignon.png",x:1150,y:parseInt(Math.random()*550),couleur:color,zigzag:zigzag,xzigzag:0});
+					}	
+				}
+		
+				var deplacerBidule=function() 
+				{
+					var newMissiles=[];	
+					for(var i=0 ; i<missiles.length ; i++ )
+					{
+						missiles[i].x+=10;
+						
+						if(!(missiles[i].x>1200))
+						{
+							newMissiles.push(missiles[i]);
+						}
+					}
+					missiles=newMissiles;
+					
+					var newGentils=[];	
+					for(var i=0 ; i<gentils.length ; i++ )
+					{
+						if(gentils[i].x>100)
+						{
+							gentils[i].x-=(4+niveau);
+							if(gentils[i].zigzag)
+							{
+								gentils[i].xzigzag = gentils[i].xzigzag%40;
+								if(gentils[i].xzigzag/40>0.5)
+								{
+									if (gentils[i].y > 0) gentils[i].y-=5;
+								}
+								else
+								{
+									if (gentils[i].y < 550) gentils[i].y+=5;
+								}
+								gentils[i].xzigzag++;
+							}
+							newGentils.push(gentils[i]);
+						}
+						else if (vie >0)
+						{
+							vie += 100;
+							changerVie();
+						}
+					}
+					gentils=newGentils;
+					
+					for(var i=0 ; i<mechants.length ; i++ )
+					{
+						if(mechants[i].x>100)
+						{
+							mechants[i].x-=(4+niveau);
+							if(mechants[i].zigzag)
+							{
+								mechants[i].xzigzag = mechants[i].xzigzag%40;
+								if(mechants[i].xzigzag/40>0.5)
+								{
+									if (mechants[i].y > 0) mechants[i].y-=5;
+								}
+								else
+								{
+									if (mechants[i].y < 550) mechants[i].y+=5;
+								}
+								mechants[i].xzigzag++;
+							}
+						}
+						else if (vie >0)
+						{
+							vie -= 1;
+							changerVie();
+							if(vie == 0) defaite();
+						}
+					}
+				};
+				
+				var detecterCollision=function()
+				{
+					if(missiles.length>0 && mechants.length>0)
+					{
+						var nbMissiles = missiles.length;
+						for(var i=0 ; i<mechants.length ; i++ )
+						{
+							var bound1={x1:mechants[i].x,x2:mechants[i].x+50,y1:mechants[i].y,y2:mechants[i].y+50,src:mechants[i].src,couleur:mechants[i].couleur};
+							
+							for (var j=0 ; (j<nbMissiles) ; j++ )
+							{
+								var bound2={x1:missiles[j].x,x2:missiles[j].x+30,y1:missiles[j].y,y2:missiles[j].y+20,src:missiles[j].src,couleur:missiles[j].couleur};
+								if(enCollision(bound1,bound2))
+								{
+									if(bound1.couleur == bound2.couleur)
+									{
+										mechants[i].src='';
+										missiles[j].src='';
+										score++;
+										if(score%10==0)
+										{
+											niveau++;
+											changerNiveau();
+										}
+										changerScore();
+									}
+									else
+									{
+										missiles[j].src='';
+									}
+								}
+							}
+						}
+						for(var i=0 ; i<gentils.length ; i++ )
+						{
+							var bound1={x1:gentils[i].x,x2:gentils[i].x+50,y1:gentils[i].y,y2:gentils[i].y+50,src:gentils[i].src,couleur:gentils[i].couleur};
+							
+							for (var j=0 ; (j<nbMissiles) ; j++ )
+							{
+								var bound2={x1:missiles[j].x,x2:missiles[j].x+30,y1:missiles[j].y,y2:missiles[j].y+20,src:missiles[j].src,couleur:missiles[j].couleur};
+								if(enCollision(bound1,bound2))
+								{
+									gentils[i].src='';
+									missiles[j].src='';
+								}
+							}
+						}
+					}
+				};
+				
+				
+				var enCollision = function(bound1,bound2) 
+				{
+					var res = false;
+					if (bound2.x2>bound1.x1 && bound2.x1<bound1.x2)
+					{
+						if ((bound2.y2 > bound1.y1) && (bound2.y1 < bound1.y2))
+						{
+							res = true;
+						}
+					}
+					return res;
+				};
+				
+				var dessinerBidule=function() 
+				{
+					var newMissiles=[];	
+					for(var i=0 ; i<missiles.length ; i++ )
+					{
+						if(missiles[i].src!='') newMissiles.push(missiles[i]);
+					}
+					missiles=newMissiles;
+					var newMechants=[];	
+					for(var i=0 ; i<mechants.length ; i++ )
+					{
+						if(mechants[i].src!='') newMechants.push(mechants[i]);
+					}
+					mechants=newMechants;
+					var newGentils=[];	
+					for(var i=0 ; i<gentils.length ; i++ )
+					{
+						if(gentils[i].src!='') newGentils.push(gentils[i]);
+					}
+					gentils=newGentils;
+					
+					for(var i=0 ; i<missiles.length ; i++ )
+					{
+						var img = new Image();
+						img.src = missiles[i].src;
+						ctx.drawImage(img, missiles[i].x, missiles[i].y, 30, 20);
+					}
+					
+					for(var i=0 ; i<mechants.length ; i++ )
+					{
+						var img = new Image();
+						img.src = mechants[i].src;
+						ctx.drawImage(img, mechants[i].x, mechants[i].y, 50, 50);
+					}
+					
+					for(var i=0 ; i<gentils.length ; i++ )
+					{
+						var img = new Image();
+						img.src = gentils[i].src;
+						ctx.drawImage(img, gentils[i].x, gentils[i].y, 50, 50);
+					}
+					
+				};
+				
+				var dessinerJoueur = function()
+				{
+					var img = new Image();
+					img.src = joueur.src;
+					ctx.drawImage(img, joueur.x, joueur.y, joueur.width, joueur.height);
+				};
+				
+				jeu=setInterval(loop,40);
+			};
+			
+			var start = function ()
+			{
+				cliqueUneSeuleFois=false;
+				document.getElementById("start").style.display="none";
+				demarrerLeJeu();
+			};
+				
+			var genereMissile = function(chaine)
+			{
+				missiles.push({src:"IMG/tir_"+chaine+".png",x:30,y:joueur.y,couleur:chaine});
+			};
+			
+			var pause = function ()
+			{
+				clearInterval(jeu);
+				document.getElementById("start").innerHTML="Revenir au jeu";
+				document.getElementById("start").style.display="block";
+			};
+			
+			var key = function (e) 
+			{
+				e = e || window.event;
+				var k = e.keyCode || e.which;
+				//alert(k);
+				if (k == 32)
+				{
+					genereMissile(couleurCourante);
+				}
+				else if (k == 38)
+				{
+					if (joueur.y  > 0) joueur.y = joueur.y-30;
+				}
+				else if (k == 40)
+				{
+					if (joueur.y  < (600-50)) joueur.y = joueur.y+30;
+				}
+				else if (k == 49)
+				{
+					couleurCourante='rouge';
+				}
+				else if (k == 50)
+				{
+					couleurCourante='vert';
+				}
+				else if (k == 51)
+				{
+					couleurCourante='bleu';
+				}
+				else if (k == 52)
+				{
+					couleurCourante='jaune';
+				}
+				else if (k == 80)
+				{
+					pause();
+				}
+			};
+			
+			function changerVie()
+			{
+				document.getElementById("vie").innerHTML = "Vie : "+vie;
+			}
+			
+			function changerScore()
+			{
+				document.getElementById("score").innerHTML = "Ton score : "+score;
+			}
+			
+			function changerNiveau()
+			{
+				document.getElementById("niveau").innerHTML = "Niveau : "+niveau;
+			}
+			
+			window.onkeydown = key;
+			
+			function rules()
+			{
+				window.open('regles-fidget-et-les-monstres.html','Regles du Jeu','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=1, copyhistory=0, menuBar=0, width=1200, height=850, left=20, top=20');
+			}
+		</script>
+		<style type="text/css">
+			body
+			{
+				background: url("IMG/Fond_Gauche.jpg") no-repeat scroll left center, url("IMG/Fond_Droite.jpg") no-repeat scroll right center, url("IMG/Fond_Centre.jpg") repeat scroll center center rgba(0, 0, 0, 0);
+				background-color:white;
+				text-align:center;
+			}
+			
+			td
+			{
+				background:black;
+				text-align:center;
+			}
+			
+			h1
+			{
+				background:black;
+				color:white;
+			}
+			
+			h3
+			{
+				background:black;
+				color:white;
+			}
+			
+			a
+			{
+				background:black;
+				color:white;
+				cursor:pointer;
+				font-size:30px;
+			}
+			
+			p
+			{
+				background:black;
+				color:white;
+				font-size:30px;
+			}
+			
+			#annonce
+			{
+				position: absolute;
+				font-size: 72px;
+				top: 15%;
+				left: 40%;
+				background: url(IMG/ShakesFidgetDefaite.jpg) bottom no-repeat white;
+				height: 700px;
+				width: 400px;
+				display: none;
+			}
+			
+			#start
+			{
+				position: absolute;
+				font-size: 72px;
+				top: 35%;
+				left: 40%;
+				display: block;
+				background:black;
+				color:white;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="blockIE" style="width:100%;height:100%;background:rgba(0,0,0,0.8);position:fixed;z-index:1;display:none;font-size:150px;color:white">Ce site n'est pas concu pour Internet Explorer, merci de passer sur un autre navigateur</div>
+		<h1> Tuez les monstres ! </h1>
+		<table style="width:100%;">
+			<TR>
+				<TD style="width:15%;">
+				<a href="index.php">Retour vers le menu</a>
+				</TD>
+				<TD style="width:15%;">
+				<p id="niveau"> Niveau : 0 </p>
+				</TD>
+				<TD style="width:20%;">
+				<p id="score"> Ton score : 0 point </p>
+				</TD>
+				<TD style="width:20%;">
+					<table style="width:100%;">
+						<TR>
+							<TD style="background-color:red;width:20%;height:100%;" onclick="couleurCourante='rouge'">
+							1
+							</TD>
+							<TD style="background-color:green;width:20%;height:100%;" onclick="couleurCourante='vert'">
+							2
+							</TD>
+							<TD style="background-color:blue;width:20%;height:100%;" onclick="couleurCourante='bleu'">
+							3
+							</TD>
+							<TD style="background-color:yellow;width:20%;height:100%;" onclick="couleurCourante='jaune'">
+							4
+							</TD>
+						</TR>
+					</table>
+					
+				</TD>
+				<TD style="width:15%;">
+				<p id="vie">Vie : 1000</p>
+				</TD>
+				<TD style="width:15%;">
+				<a onclick="rules()">Regles</a>
+				</TD>
+			</TR>
+		</table>
+		<canvas id="canvas" width="1200px" height="600px" onclick="genereMissile(couleurCourante)"></canvas>
+		<div id="annonce">Gagné !</div>
+		<div id="start" onclick="start()">Commencer !</a></div>
+	</body>
+</html>
