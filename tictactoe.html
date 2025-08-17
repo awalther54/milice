@@ -1,0 +1,222 @@
+<html>
+	<head>
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+	<meta http-equiv="Expires" content="0" />
+	<script type="text/javascript">
+	document.addEventListener("DOMContentLoaded", function(event)
+	{
+		document.getElementById("loading").style.display="none";
+	}
+	);
+	var pasEncoreCommence=true;
+	var imgs = [];
+	var player0Tiles = [];
+	var player1Tiles = [];
+	var indexPlayer = 0;
+	var success = [
+		[1,2,3],
+		[1,4,7],
+		[1,5,9],
+		[2,5,8],
+		[3,6,9],
+		[3,5,7],
+		[4,5,6],
+		[7,8,9]
+	];
+	for(var i=0;i<2;i++)
+	{
+		imgs.push("IMG/valid.jpg");
+		imgs.push("IMG/cross.jpg");
+	}
+	
+	var testVictoire=function()
+	{
+		for (var findSuccess of success) {
+			var numberYes = 0;
+			for (var successvalue of findSuccess) {
+				for (var tile0value of player0Tiles) {
+					if (tile0value == successvalue) {
+						numberYes++;
+					}
+				}
+				if (numberYes > 2) {
+					document.getElementById("annonce").innerHTML="Player 1 wins !";
+					document.getElementById("annonce").style.display="block";
+				}
+			}
+			var numberYes = 0;
+			for (var successvalue of findSuccess) {
+				for (var tile1value of player1Tiles) {
+					if (parseInt(tile1value) == parseInt(successvalue)) {
+						numberYes++;
+					}
+				}
+				if (numberYes > 2) {
+					document.getElementById("annonce").innerHTML="Player 2 wins !";
+					document.getElementById("annonce").style.display="block";
+				}
+			}
+		}
+	}
+	
+	function rules()
+	{
+		window.open('regles_memory.html','Regles du Jeu','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=1, copyhistory=0, menuBar=0, width=1200, height=850, left=20, top=20');
+	}
+	
+	function start()
+	{
+		if(pasEncoreCommence)
+		{
+			document.getElementById("start").style.display="none";
+			pasEncoreCommence=false;
+			for (var i=0;i<3;i++)
+			{
+				for (var j=0;j<3;j++)
+				{
+					var div = document.createElement("div");
+					var left = j*25 + 5*j + 10;
+					var top = i*25 + 5*i + 10;
+					div.setAttribute("style", "position: absolute;left: "+left+"%; width: 25%; height:25%; top: "+top+"%; background: white;");
+					div.setAttribute("onclick","play(this)");
+					div.setAttribute("id",i*3+j+1);
+					div.classList.add("line"+i);
+					div.classList.add("column"+j);
+					div.setAttribute("innerHTML", "line"+i+"column"+j);
+					document.getElementById("tableauDeJeu").appendChild(div);
+				}
+			}
+		}
+	}
+	
+	function play(toto)
+	{
+		if (toto.classList.length == 2) {
+			toto.classList.add("player"+indexPlayer);
+			imgs.push("IMG/valid.jpg");
+			var img = document.createElement('img');
+			img.setAttribute('src', imgs[indexPlayer]);
+			if (indexPlayer == 0) {
+				player0Tiles.push(toto.id);
+			}
+			else {
+				player1Tiles.push(toto.id);
+			}
+			img.classList.add('tictactoeimg');
+			toto.appendChild(img);
+			changePlayer();
+			testVictoire();
+		}
+	}
+	function changePlayer() {
+		indexPlayer = (++indexPlayer)%2;
+		var coups = document.getElementById("coups");
+		coups.innerHTML = "Joueur "+(1+indexPlayer);
+	}
+	</script>
+	<style type="text/css">
+		body
+		{
+			background: url("IMG/Fond_Gauche.jpg") no-repeat scroll left center, url("IMG/Fond_Droite.jpg") no-repeat scroll right center, url("IMG/Fond_Centre.jpg") repeat scroll center center rgba(0, 0, 0, 0);
+			background-color:white;
+			text-align:center;
+		}
+		
+		.tictactoeimg {
+			height: 100%;
+			width: 100%;
+		}
+		
+		td
+		{
+			background:black;
+			text-align:center;
+		}
+		
+		h1
+		{
+			background:black;
+			color:white;
+		}
+		
+		h3
+		{
+			background:black;
+			color:white;
+		}
+		
+		a
+		{
+			background:black;
+			color:white;
+			cursor:pointer;
+			font-size:30px;
+		}
+		
+		p
+		{
+			background:black;
+			color:white;
+			font-size:30px;
+		}
+		
+		#tableauDeJeu
+		{
+			position: absolute;
+			top: 120px;
+			left: 10px;
+			right: 10px;
+			bottom: 10px;
+			background:IMG/Taverne.jpg;
+		}
+		
+		#annonce
+		{
+			position: absolute;
+			font-size: 72px;
+			top: 15%;
+			left: 40%;
+			background: url(IMG/gagne.png) bottom no-repeat white;
+			height: 700px;
+			width: 400px;
+			display: none;
+		}
+		
+		#start
+		{
+			position: absolute;
+			font-size: 72px;
+			top: 35%;
+			left: 40%;
+			display: block;
+			background:black;
+			color:white;
+		}
+	</style>
+	</head>
+	<body>
+	
+		<div id="loading" style="vertical-align:middle;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);position:absolute;z-index:2;">
+			<img src="http://gickr.com/results3/anim_c87cb4f5-2e71-2634-45d9-22427b9cc466.gif" style="width:300;margin:auto;"/>
+		</div>
+		
+		<h1> Tic Tac Toe ! </h1>
+		<table style="width:100%;">
+			<TR>
+				<TD style="width:33%;">
+				<a href="index.php">Retour vers le menu</a>
+				</TD>
+				<TD style="width:34%;">
+				<p id="coups">Joueur 1</p>
+				</TD>
+				<TD style="width:33%;">
+				<a onclick="rules()">Regles</a>
+				</TD>
+			</TR>
+		</table>
+		<div id="tableauDeJeu"></div>
+		<div id="annonce">Gagné !</div>
+		<div id="start" onclick="start()">Commencer !</a></div>
+	</body>
+</html>
